@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:map_note/helpers/error_handler.dart';
 
-class MapDataController extends GetxController {
+class MapDataController extends GetxController with ErrorHandler {
   static CollectionReference mapData =
       FirebaseFirestore.instance.collection('map_data');
 
@@ -13,19 +14,22 @@ class MapDataController extends GetxController {
   var desc = TextEditingController().obs;
 
   ///Add Map data to fire store
-  Future<void> addMapData({required data}) {
-    return mapData.add(data);
-  }
-
-  ///Edit Mapdata
-  Future<void> editMapData() async {
-    //
+  Future<void> addMapData({required data}) async {
+    try {
+      await mapData.add(data);
+    } catch (e) {
+      handleError(e);
+    }
   }
 
   ///Delete Mapdata
   Future<void> deleteMapData(note) async {
-    var docNote = mapData.doc(note.id);
-    await docNote.delete();
-    Get.back();
+    try {
+      var docNote = mapData.doc(note.id);
+      await docNote.delete();
+      Get.back();
+    } catch (e) {
+      handleError(e);
+    }
   }
 }
