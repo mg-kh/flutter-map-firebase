@@ -14,7 +14,7 @@ class MapDataController extends GetxController with ErrorHandler {
   var desc = TextEditingController().obs;
 
   ///Add Map data to fire store
-  Future<void> addMapData({required data}) async {
+  Future<void> addMapData({required data})async {
     try {
       await mapData.add(data);
     } catch (e) {

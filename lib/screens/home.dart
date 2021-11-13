@@ -65,10 +65,7 @@ class _HomeState extends State<Home> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('map_data')
-            .where('uid', isEqualTo: authController.userData.value.uid)
-            .snapshots(
-              includeMetadataChanges: true,
-            ),
+            .snapshots(),
         builder: (_, snapshot) {
           if (snapshot.hasData) {
             return Obx(
@@ -116,13 +113,17 @@ class _HomeState extends State<Home> {
                                   width: 25,
                                   height: 25,
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.2),
+                                    color: data['uid'] == authController.userData.value.uid
+                                        ? Colors.teal.withOpacity(0.2)
+                                        : Colors.red.withOpacity(0.2),
                                   ),
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.circle,
-                                color: Colors.red,
+                                color: data['uid'] == authController.userData.value.uid
+                                ? Colors.teal
+                                : Colors.red,
                                 size: 12.0,
                               )
                             ],
@@ -132,7 +133,7 @@ class _HomeState extends State<Home> {
                               Dialog(
                                 child: Container(
                                   width: 250,
-                                  height: 210,
+                                  height: 230,
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.8),
@@ -169,6 +170,7 @@ class _HomeState extends State<Home> {
                                           ],
                                         ),
 
+                                        //Desc
                                         Expanded(
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(
@@ -177,6 +179,15 @@ class _HomeState extends State<Home> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
+                                                //User Name
+                                                data['uid'] == authController.userData.value.uid
+                                                    ? const Text('- You', style: TextStyle(fontStyle: FontStyle.italic,),)
+                                                    : Text('- ${data['name']}',style: const TextStyle(fontStyle: FontStyle.italic,),),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+
+
                                                 //Title
                                                 Text(
                                                   '${data['title']}',
@@ -184,9 +195,11 @@ class _HomeState extends State<Home> {
                                                       .textTheme
                                                       .headline6,
                                                 ),
+
                                                 const SizedBox(
                                                   height: 10,
                                                 ),
+
                                                 //Desc
                                                 Text(
                                                   '${data['desc']}',
@@ -205,8 +218,9 @@ class _HomeState extends State<Home> {
 
                                         //Actions
                                         Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
+                                          mainAxisAlignment:data['uid'] == authController.userData.value.uid
+                                              ? MainAxisAlignment.spaceAround
+                                              : MainAxisAlignment.center,
                                           children: [
                                             //Close
                                             TextButton(
@@ -218,15 +232,17 @@ class _HomeState extends State<Home> {
                                                 Get.back();
                                               },
                                             ),
+
                                             //Delete note
-                                            ElevatedButton(
+                                            data['uid'] == authController.userData.value.uid
+                                                ?  ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 primary: Colors.red,
                                               ),
                                               child: const Text('Delete'),
                                               onPressed: () {
                                                 if (authController
-                                                        .userData.value.uid ==
+                                                    .userData.value.uid ==
                                                     data['uid']) {
                                                   mapDataController
                                                       .deleteMapData(data);
@@ -234,7 +250,8 @@ class _HomeState extends State<Home> {
                                                   Get.toNamed('/login');
                                                 }
                                               },
-                                            ),
+                                            )
+                                                : const SizedBox(),
                                           ],
                                         )
                                       ],
@@ -451,13 +468,18 @@ class _HomeState extends State<Home> {
                     mapDataController.addMapData(
                       data: {
                         'uid': authController.userData.value.uid,
+                        'name': authController.userData.value.displayName,
                         'lat': pos.latitude,
                         'lng': pos.longitude,
                         'title': mapDataController.title.value.text,
                         'desc': mapDataController.desc.value.text,
                       },
                     ).then(
-                      (value) => Get.back(),
+                      (value){
+                        mapDataController.title.value.text = '';
+                        mapDataController.desc.value.text = '';
+                        Get.back();
+                      },
                     );
                   },
                 ),
