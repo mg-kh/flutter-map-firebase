@@ -1,16 +1,38 @@
-# map_note
+# Note taking app with flutter and firebase
 
-A new Flutter project.
+Simple map app with flutter , firebase and mapbox.
 
-## Getting Started
+## Features
+- Point to map
+- Take note with this point
+- Delete note
+- Gmail Login
 
-This project is a starting point for a Flutter application.
+## Plugin usage
+- [get](https://pub.dev/packages/get)
+- [flutter_map](https://pub.dev/packages/flutter_map)
+- [flutter_map_marker_popup](https://pub.dev/packages/flutter_map_marker_popup)
+- [firebase_core](https://pub.dev/packages/firebase_core)
+- [cloud_firestore](https://pub.dev/packages/cloud_firestore)
+- [firebase_auth](https://pub.dev/packages/firebase_auth)
+- [google_sign_in](https://pub.dev/packages/google_sign_in)
 
-A few resources to get you started if this is your first Flutter project:
+### How to use
+```
+git clone
+flutter pub get
+flutter run
+```
+- Register app in firebase
+- get token in (mapbox)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+### Can download release app here
+- [Download release app herer!](https://pub.dev/packages/google_sign_in)
+```
+! Release app has default logo,name and splash screen.
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### App Images
+
+| Syntax      | Description |
+| ----------- | ----------- |
