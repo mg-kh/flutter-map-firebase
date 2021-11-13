@@ -1,58 +1,61 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:map_note/screens/home.dart';
+import 'package:map_note/models/user_model.dart';
 
-class AppController extends GetxController {
-  static CollectionReference mapData =
-      FirebaseFirestore.instance.collection('map_data');
+class AuthController extends GetxController {
   static GoogleSignIn googleSignIn = GoogleSignIn();
   var isLogin = false.obs;
-  var userData = <String, dynamic>{}.obs;
+  var userData = UserModel(
+    displayName: '',
+    uid: '',
+    email: '',
+  ).obs;
 
-  Future<void> addMapData({required data}) {
-    return mapData.add(data);
-  }
-
+  ///Sign In to account
   Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
+    /// Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     // Obtain the auth details from the request
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
 
-    // Create a new credential
+    /// Create a new credential
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
 
-    Get.offAll(() => const Home());
+    Get.offAllNamed('/');
 
-    // Once signed in, return the UserCredential
+    /// Once signed in, return the UserCredential
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
+  ///Logout
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
     await googleSignIn.signOut();
     checkAuth();
   }
 
+  ///Check user
   void checkAuth() {
     FirebaseAuth.instance.idTokenChanges().listen((User? user) {
       if (user == null) {
-        userData({});
+        userData.value = UserModel(
+          displayName: '',
+          uid: '',
+          email: '',
+        );
         isLogin(false);
       } else {
-        var userJsonData = {
-          'displayName' : user.displayName,
-          'uid' : user.uid,
-          'email' : user.email,
-        };
-        userData(userJsonData);
+        userData.value = UserModel(
+          displayName: user.displayName,
+          uid: user.uid,
+          email: user.email,
+        );
         isLogin(true);
       }
     });

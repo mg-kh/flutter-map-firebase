@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:map_note/routes.dart';
 import 'package:map_note/screens/home.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -15,6 +16,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      getPages: routes,
       home: FutureBuilder(
         future: Firebase.initializeApp(),
         builder: (_, snapshot) {

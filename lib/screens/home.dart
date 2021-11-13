@@ -7,8 +7,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:get/get.dart';
 import 'package:map_note/components/zoom_buttons.dart';
 import 'package:flutter_map_marker_popup/flutter_map_marker_popup.dart';
-import 'package:map_note/controller/app_controller.dart';
-import 'package:map_note/screens/login.dart';
+import 'package:map_note/controller/auth_controller.dart';
+import 'package:map_note/controller/map_data_controller.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -18,16 +18,14 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final AppController appController = Get.put(AppController());
+  final MapDataController mapDataController = Get.put(MapDataController());
+  final AuthController authController = Get.put(AuthController());
 
   late final MapController mapController;
   final FitBoundsOptions options =
       const FitBoundsOptions(padding: EdgeInsets.all(12.0));
   late final MapState map;
   final PopupController _popupLayerController = PopupController();
-  var selectCord = LatLng(21.9, 95.9).obs;
-  var title = TextEditingController();
-  var desc = TextEditingController();
 
   @override
   void initState() {
@@ -42,45 +40,50 @@ class _HomeState extends State<Home> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Obx(
-          () => appController.userData.value.isNotEmpty
-          ? Text('${appController.userData['displayName']}')
-          : const Text('Map Note'),
+          () => authController.userData.value.displayName != ''
+              ? Text('${authController.userData.value.displayName}')
+              : const Text('Map Note'),
         ),
         actions: [
-          Obx((){
-            if(appController.isLogin.value){
+          Obx(() {
+            if (authController.isLogin.value) {
               return TextButton(
                 style: TextButton.styleFrom(
                   primary: Colors.white,
                 ),
                 child: const Icon(Icons.logout),
                 onPressed: () {
-                  appController.logout();
+                  authController.logout();
                 },
               );
-            }else{
+            } else {
               return const SizedBox();
             }
           })
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('map_data').where('uid', isEqualTo: appController.userData['uid']).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('map_data')
+            .where('uid', isEqualTo: authController.userData.value.uid)
+            .snapshots(
+              includeMetadataChanges: true,
+            ),
         builder: (_, snapshot) {
           if (snapshot.hasData) {
             return Obx(
               () => FlutterMap(
                 options: MapOptions(
-                  center: selectCord.value,
+                  center: mapDataController.selectCord.value,
                   minZoom: 2,
                   zoom: 2,
                   plugins: [ZoomButtonsPlugin()],
                   onTap: (tapPos, pos) {
-                    selectCord(pos);
+                    mapDataController.selectCord(pos);
                     _popupLayerController.showPopupsOnlyFor(
                       [
                         Marker(
-                          point: selectCord.value,
+                          point: mapDataController.selectCord.value,
                           width: 40,
                           height: 40,
                           builder: (_) =>
@@ -253,7 +256,7 @@ class _HomeState extends State<Home> {
                         popupController: _popupLayerController,
                         markers: [
                           Marker(
-                            point: selectCord.value,
+                            point: mapDataController.selectCord.value,
                             width: 40,
                             height: 40,
                             builder: (_) =>
@@ -325,10 +328,10 @@ class _HomeState extends State<Home> {
                                       ElevatedButton(
                                         child: const Text('Add Note'),
                                         onPressed: () {
-                                          if (appController.isLogin.value) {
+                                          if (authController.isLogin.value) {
                                             showBottomSheet(pos: marker.point);
                                           } else {
-                                            Get.to(() => Login());
+                                            Get.toNamed('/login');
                                           }
                                         },
                                       )
@@ -375,7 +378,7 @@ class _HomeState extends State<Home> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Lat , Long
+            /// Lat , Long
             Row(
               children: [
                 const Icon(
@@ -401,24 +404,9 @@ class _HomeState extends State<Home> {
               height: 20,
             ),
 
-            // Choose Icons
-            OutlinedButton(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text('Choose Icon'),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Icon(Icons.sentiment_satisfied_alt),
-                ],
-              ),
-              onPressed: () {},
-            ),
-
-            // Title
+            /// Title
             TextFormField(
-              controller: title,
+              controller: mapDataController.title.value,
               decoration: const InputDecoration(hintText: 'Title'),
             ),
 
@@ -426,9 +414,9 @@ class _HomeState extends State<Home> {
               height: 20,
             ),
 
-            // Description
+            /// Description
             TextFormField(
-              controller: desc,
+              controller: mapDataController.desc.value,
               decoration: const InputDecoration(hintText: 'Description'),
               maxLines: 4,
             ),
@@ -437,7 +425,7 @@ class _HomeState extends State<Home> {
               height: 20,
             ),
 
-            // Actions
+            /// Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -450,13 +438,13 @@ class _HomeState extends State<Home> {
                 ElevatedButton(
                   child: const Text('Add Note'),
                   onPressed: () {
-                    appController.addMapData(
+                    mapDataController.addMapData(
                       data: {
-                        'uid': appController.userData['uid'],
+                        'uid': authController.userData.value.uid,
                         'lat': pos.latitude,
                         'lng': pos.longitude,
-                        'title': title.text,
-                        'desc': desc.text,
+                        'title': mapDataController.title.value.text,
+                        'desc': mapDataController.desc.value.text,
                       },
                     ).then(
                       (value) => Get.back(),
