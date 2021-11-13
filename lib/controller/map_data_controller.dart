@@ -23,7 +23,9 @@ class MapDataController extends GetxController {
   }
 
   ///Delete Mapdata
-  Future<void> deleteMapData() async {
-    //
+  Future<void> deleteMapData(note) async {
+    var docNote = mapData.doc(note.id);
+    await docNote.delete();
+    Get.back();
   }
 }

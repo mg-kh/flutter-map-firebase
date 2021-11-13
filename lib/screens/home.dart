@@ -218,13 +218,23 @@ class _HomeState extends State<Home> {
                                                 Get.back();
                                               },
                                             ),
-                                            //Edit note
+                                            //Delete note
                                             ElevatedButton(
-                                              child: const Text('Edit Note'),
+                                              style: ElevatedButton.styleFrom(
+                                                primary: Colors.red,
+                                              ),
+                                              child: const Text('Delete'),
                                               onPressed: () {
-                                                // showBottomSheet(pos: marker.point);
+                                                if (authController
+                                                        .userData.value.uid ==
+                                                    data['uid']) {
+                                                  mapDataController
+                                                      .deleteMapData(data);
+                                                }else{
+                                                  Get.toNamed('/login');
+                                                }
                                               },
-                                            )
+                                            ),
                                           ],
                                         )
                                       ],
